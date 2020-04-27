@@ -1,0 +1,86 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.2.6.RELEASE'
+    id 'com.palantir.docker' version "0.22.1"
+    id 'com.palantir.docker-run' version '0.22.1'
+    id 'com.palantir.docker-compose' version '0.22.1'
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'java-library-distribution'
+
+group 'org.picstories.parsers'
+version '1.0-SNAPSHOT'
+
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        url = localProperties['myMavenRepoReadUrl']
+
+        credentials {
+            username = localProperties['myMavenRepoReadUsername']
+            password = localProperties['myMavenRepoReadPassword']
+        }
+    }
+}
+
+docker {
+    name "picstories/picstories-parsers:virusmaster"
+    files 'build/libs/parsers-service-1.0-SNAPSHOT.jar'
+    dockerfile file('Dockerfile')
+    tag 'DockerHub', 'virusmaster'
+    pull true
+    noCache true
+}
+
+dependencies {
+    implementation (group: 'org.picstories.library', name: 'picstories-library', version: '3.2.1-SNAPSHOT') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-data-mongodb-reactive'
+    }
+
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '2.2.5.RELEASE'
+    implementation group: 'io.projectreactor.kafka', name: 'reactor-kafka', version: '1.2.2.RELEASE'
+    implementation group: 'org.springframework.kafka', name: 'spring-kafka', version: '2.3.4.RELEASE'
+    implementation group: 'com.google.guava', name: 'guava', version: '28.0-jre'
+    implementation group: 'net.bytebuddy', name: 'byte-buddy', version: '1.10.9'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    implementation group: 'com.spikhalskiy.futurity', name: 'futurity-core', version: '0.3-RC3'
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-dependencies', version: 'Greenwich.SR3', ext: 'pom'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-config', version: '2.2.2.RELEASE'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-sleuth', version: '2.2.0.RELEASE'
+
+    testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    testImplementation group: 'org.projectlombok', name: 'lombok', version: '1.18.12'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.2.4'
+    testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
+    testImplementation group: 'io.projectreactor', name: 'reactor-test', version: '3.3.0.RELEASE'
+    testImplementation('org.springframework.boot:spring-boot-starter-test:2.2.5.RELEASE') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+distZip.shouldRunAfter(build)
+
+jar {
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+    manifest {
+        attributes 'Main-Class': 'org.picstories.parsers.ParsersApplication',
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
+    }
+}
