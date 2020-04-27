@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * @author arman.shamenov
  */
-@Component(XkcdParser.PARSER_CODE)
+@Component
 public class XkcdParser implements PageParser {
 
     public static final String PARSER_CODE = "xkcd-parser";

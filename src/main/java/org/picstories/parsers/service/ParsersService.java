@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author arman.shamenov
@@ -32,9 +34,9 @@ public class ParsersService {
     private final Map<String, PageParser> pageParsers;
     private final UpdateComicsSender updateComicsSender;
 
-    public ParsersService(Map<String, PageParser> pageParsers,
+    public ParsersService(List<PageParser> pageParsers,
                           UpdateComicsSender updateComicsSender) {
-        this.pageParsers = pageParsers;
+        this.pageParsers = pageParsers.stream().collect(Collectors.toMap(PageParser::getParserCode, Function.identity()));
         this.updateComicsSender = updateComicsSender;
     }
 
@@ -43,8 +45,8 @@ public class ParsersService {
     }
 
     /**
-     * @param taskMessage     comic to parse and its last parsed page
-     * @param send           if we want to send the pages to kafka
+     * @param taskMessage comic to parse and its last parsed page
+     * @param send        if we want to send the pages to kafka
      * @return list of parsed comics
      */
     public UpdateTask consume(ParseTask taskMessage, boolean send) {
