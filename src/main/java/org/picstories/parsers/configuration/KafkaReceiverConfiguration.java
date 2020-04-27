@@ -49,7 +49,7 @@ public class KafkaReceiverConfiguration {
                 .setNameFormat("kafka-consumer-thread-%d")
                 .setDaemon(false)
                 .build();
-        Supplier<Scheduler> schedulerSupplier = () -> Schedulers.newElastic(35, factory);
+        Supplier<Scheduler> schedulerSupplier = () -> Schedulers.newElastic(95, factory);
 
         ReceiverOptions<String, ParseTask> receiverOptions = ReceiverOptions
                 .<String, ParseTask>create(props)

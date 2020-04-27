@@ -40,7 +40,7 @@ public class KafkaSenderConfiguration {
                 .setNameFormat("kafka-producer-thread-%d")
                 .setDaemon(false)
                 .build();
-        Scheduler scheduler =  Schedulers.newElastic(35, factory);
+        Scheduler scheduler =  Schedulers.newElastic(95, factory);
         SenderOptions<String, UpdateTask> senderOptions = SenderOptions
                 .<String, UpdateTask>create(res)
                 .maxInFlight(1024)
